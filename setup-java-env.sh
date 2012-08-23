@@ -6,50 +6,80 @@
 # it is part of a collection of helper scripts I used to quick setup an android build environment  #
 ####################################################################################################
 
-# put the path to your downloaded + installed jre
+#check os arch
+ARCH=$(uname -a | grep 64 | wc -l);
+
+if [[ ${ARCH} -gt 0 ]]
+then
+         LIBPATH="/usr/lib64";
+         PLUGINPATH="amd64";
+         echo -e "found 64bit system \n"
+else
+         LIBPATH="/usr/lib";
+         PLUGINPATH="i386";
+         echo -e "found i386 system \n"
+fi
+
+echo -e "\nconfigured LIBPATH as ${LIBPATH}\n"
+
+# path to your downloaded + installed jre
 JAVA_HOME="/usr/java/jdk1.6.0_33";
+JRE_HOME="/usr/java/jre1.6.0_33";
 
 OLD_JAVAHOME=`update-alternatives --query java | grep ${JAVA_HOME} | wc -l`;
 OLD_JAVACHOME=`update-alternatives --query javac | grep ${JAVA_HOME} | wc -l`; 
+OLD_BROWSERPLUGIN=`update-alternatives --query javaplugin | grep ${JRE_HOME} | wc -l`; 
 
 if [ ${OLD_JAVAHOME} -gt 0 ]
 then
 
   #remove conflicting configurations
-  echo "found old configuration for ${JAVA_HOME}"
+  echo -e "\nfound old configuration for ${JAVA_HOME}"
   update-alternatives --remove java $JAVA_HOME/bin/java;
 else
-   echo "no old ${JAVA_HOME} found";
+   echo -e "no old ${JAVA_HOME} found";
 fi
 
 if [ ${OLD_JAVACHOME} -gt 0 ]
 then
-    echo "found old configuration for javac pointing to ${JAVA_HOME}"
+    echo -e "\nfound old configuration for javac pointing to ${JAVA_HOME}"
     update-alternatives --remove javac $JAVA_HOME/bin/javac;
 else
-    echo "no old ${JAVA_HOME} found configuring new javac";
+    echo -e "no old ${JAVA_HOME} found configuring new javac";
 fi
 
+if [ ${OLD_BROWSERPLUGIN} -gt 0 ]
+then
+    echo -e "\nfound old configuration for javaplugin pointing to ${JRE_HOME}"
+    update-alternatives --remove javaplugin ${JRE_HOME}/lib/amd64/libnpjp2.so;
+else
+    echo -e "no old ${JRE_HOME} found configuring new javaplugin";
+fi
 
+echo -e "\nJAVAHOME used: ${JAVA_HOME}";
+echo -e "JREHOME used: ${JRE_HOME}\n";
 
-echo "JAVAHOME used: ${JAVA_HOME}";
-
-echo "setting java jdk and slaves javadoc,jar,keytool";
+echo -e "installing config JAVA w/ dirs java jre jre_exports and binaries keytool,policytool,orbd,rmiregistry,servetool,tnameserv\n";
 
 update-alternatives \
 --install /usr/bin/java java ${JAVA_HOME}/bin/java 1 \
+--slave ${LIBPATH}/jvm/jre jre ${JRE_HOME} \
+--slave ${LIBPATH}/jvm-exports/jre jre_exports ${JRE_HOME} \
 --slave /usr/bin/keytool keytool ${JAVA_HOME}/bin/keytool \
 --slave /usr/bin/policytool policytool ${JAVA_HOME}/bin/policytool \
 --slave /usr/bin/orbd orbd ${JAVA_HOME}/bin/orbd \
---slave /usr/bin/rmi rmi ${JAVA_HOME}/bin/rmi \
 --slave /usr/bin/rmiregistry rmiregistry ${JAVA_HOME}/bin/rmiregistry \
 --slave /usr/bin/servertool servertool ${JAVA_HOME}/bin/servertool \
---slave /usr/bin/tnameserv tnameserv ${JAVA_HOME}/bin/tnameserv
-#--slave JRE ${JAVA_HOME}/jre/;
+--slave /usr/bin/tnameserv tnameserv ${JAVA_HOME}/bin/tnameserv \
+
+echo -e "installing config JRE w/ dirs java_sdk jvm-exports and binaries jar, jarsigner...a lot ;)\n";
 
 update-alternatives \
 --install /usr/bin/javac javac ${JAVA_HOME}/bin/javac 1 \
+--slave ${LIBPATH}/jvm/java java_sdk ${JAVA_HOME} \
+--slave ${LIBPATH}/jvm-exports/java java_sdk_exports ${JAVA_HOME}/ \
 --slave /usr/bin/jar jar ${JAVA_HOME}/bin/jar \
+--slave /usr/bin/jarsigner jarsigner ${JAVA_HOME}/bin/jarsigner \
 --slave /usr/bin/javadoc javadoc ${JAVA_HOME}/bin/javadoc \
 --slave /usr/bin/javah javah ${JAVA_HOME}/bin/javah \
 --slave /usr/bin/javap javap ${JAVA_HOME}/bin/javap \
@@ -73,10 +103,24 @@ update-alternatives \
 --slave /usr/bin/wsgen wsgen ${JAVA_HOME}/bin/wsgen \
 --slave /usr/bin/wsimport wsimport ${JAVA_HOME}/bin/wsimport \
 
+echo -e "installing config JAVAPLUGIN w/ binary javaws\n";
 
-echo "activating new config";
+update-alternatives \
+--install /usr/lib/browser-plugins/javaplugin.so javaplugin ${JRE_HOME}/lib/${PLUGINPATH}/libnpjp2.so 1 \
+--slave /usr/bin/javaws javaws ${JRE_HOME}/bin/javaws
+
+
+echo -e "activating new configs\n";
 
 update-alternatives --set java $JAVA_HOME/bin/java;
 
 update-alternatives --set javac $JAVA_HOME/bin/javac;
+
+update-alternatives --set javaplugin ${JRE_HOME}/lib/amd64/libnpjp2.so
+
+echo -e "\ndisplaying installed versions of binaries\n"
+
+java -version;
+
+javac -version;
 
