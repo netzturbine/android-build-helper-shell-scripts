@@ -2,7 +2,7 @@
 ####################################################################################################
 # author: arnd (at) netzturbine (dot) de                                                           #
 # version 0.1b                                                                                     #
-# description: script links external apps to android buildsystem to include them in builds         #
+# description: configuration of basic vars + some checks                                           #
 # it is part of a collection of helper scripts I used to quick setup an android build environment  #
 ####################################################################################################
 

@@ -6,6 +6,16 @@
 # it is part of a collection of helper scripts I used to quick setup an android build environment  #
 ####################################################################################################
 
+#include config needed by script
+if [ -f config.inc.sh ]
+then
+    source config.inc.sh;
+    MSG="$MSG found config";
+else
+    echo -e "ERR: could not find config ...bailing out";
+    exit 1;
+fi
+
 #check os arch
 ARCH=$(uname -a | grep 64 | wc -l);
 
@@ -13,18 +23,19 @@ if [[ ${ARCH} -gt 0 ]]
 then
          LIBPATH="/usr/lib64";
          PLUGINPATH="amd64";
-         echo -e "found 64bit system \n"
+         echo -e "\nfound 64bit system \n"
 else
          LIBPATH="/usr/lib";
          PLUGINPATH="i386";
-         echo -e "found i386 system \n"
+         echo -e "\nno 64bit system using i386 system layout \n"
 fi
 
 echo -e "\nconfigured LIBPATH as ${LIBPATH}\n"
+echo -e "\nconfigured PLUGINPATH as ${PLUGINPATH}\n"
 
-# path to your downloaded + installed jre
-JAVA_HOME="/usr/java/jdk1.6.0_33";
-JRE_HOME="/usr/java/jre1.6.0_33";
+# path to your downloaded + installed jdk/jre
+JAVA_HOME="/usr/java/latest";
+JRE_HOME="/usr/java/latest/jre";
 
 OLD_JAVAHOME=`update-alternatives --query java | grep ${JAVA_HOME} | wc -l`;
 OLD_JAVACHOME=`update-alternatives --query javac | grep ${JAVA_HOME} | wc -l`; 

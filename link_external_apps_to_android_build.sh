@@ -9,8 +9,8 @@
 #
 # <COMPILE_ROOT>                - location containing Your builddirectory(s) !!!!needs to be defined in config.libsh!!!!
 # |_bin                         - scriptdirectory
-# | |_config.inc                - config of global vars
-# | |_functions.libsh           - definition of reusable shell funtions ie debugging/logging/testing
+# | |_config.inc.sh                - config of global vars
+# | |_functions.lib.sh           - definition of reusable shell funtions ie debugging/logging/testing
 # | |_<THISSCRIPT>              - script
 # | |_<THISSCRIPT>.log          - script log if logging is enabled
 # | |_.....                     - more scripts/more logs  
