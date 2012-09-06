@@ -2,7 +2,7 @@
 ####################################################################################################
 # author: arnd (at) netzturbine (dot) de                                                           #
 # version 0.1b                                                                                     #
-# description: script sets up java alternatives links                                              #
+# description: script sets up java alternatives links on linux systems                             #
 # it is part of a collection of helper scripts I used to quick setup an android build environment  #
 ####################################################################################################
 
