@@ -1,6 +1,6 @@
+#osx
 .DS_Store
 Icon
-
 
 # Thumbnails
 ._*
@@ -8,5 +8,16 @@ Icon
 # Files that might appear on external disk
 .Spotlight-V100
 
+#localconfig
+config.inc.local.sh
+
 #testfiles
 test*
+
+#logs
+*.log
+
+#keys
+*.key
+*.pem
+*.pk8

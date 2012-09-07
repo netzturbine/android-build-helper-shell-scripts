@@ -1,9 +1,15 @@
 #!/bin/bash
 ####################################################################################################
-# author: arnd (at) netzturbine (dot) de                                                           #
-# version 0.1b                                                                                     #
-# description: script sets up java alternatives links on linux systems                             #
+# SRC: https://github.com/netzturbine/android-build-helper-shell-scripts.git                       #
+# AUTHOR: arnd (at) netzturbine (dot) de                                                           #
+# VERSION: 0.1b                                                                                    #
+# DESCRIPTION: script sets up java alternatives links on linux systems                             #
 # it is part of a collection of helper scripts I used to quick setup an android build environment  #
+#                                                                                                  #
+# all variables starting w/ ABH_ are defined in config.inc.shell                                   #
+# all funtions starting w/ F__ are defined in functions.lib.sh                                     #
+#                                                                                                  #
+# for further Information see README.txt/README.md                                                 #
 ####################################################################################################
 
 #include config needed by script
@@ -12,7 +18,7 @@ then
     source config.inc.sh;
     MSG="$MSG found config";
 else
-    echo -e "ERR: could not find config ...bailing out";
+    echo "ERR: could not find config ...bailing out";
     exit 1;
 fi
 
@@ -23,15 +29,15 @@ if [[ ${ARCH} -gt 0 ]]
 then
          LIBPATH="/usr/lib64";
          PLUGINPATH="amd64";
-         echo -e "\nfound 64bit system \n"
+         F__log "\nfound 64bit system \n" "INF"
 else
          LIBPATH="/usr/lib";
          PLUGINPATH="i386";
-         echo -e "\nno 64bit system using i386 system layout \n"
+         F__log "\nno 64bit system using i386 system layout \n" "INF"
 fi
 
-echo -e "\nconfigured LIBPATH as ${LIBPATH}\n"
-echo -e "\nconfigured PLUGINPATH as ${PLUGINPATH}\n"
+F__log "\nconfigured LIBPATH as ${LIBPATH}\n" "INF"
+F__log "\nconfigured PLUGINPATH as ${PLUGINPATH}\n" "INF"
 
 # path to your downloaded + installed jdk/jre
 JAVA_HOME="/usr/java/latest";
@@ -45,32 +51,32 @@ if [ ${OLD_JAVAHOME} -gt 0 ]
 then
 
   #remove conflicting configurations
-  echo -e "\nfound old configuration for ${JAVA_HOME}"
+  F__log "\nfound old configuration for ${JAVA_HOME}" "INF";
   update-alternatives --remove java $JAVA_HOME/bin/java;
 else
-   echo -e "no old ${JAVA_HOME} found";
+   F__log "no old ${JAVA_HOME} found";
 fi
 
 if [ ${OLD_JAVACHOME} -gt 0 ]
 then
-    echo -e "\nfound old configuration for javac pointing to ${JAVA_HOME}"
+    F__log "\nfound old configuration for javac pointing to ${JAVA_HOME}" "INF";
     update-alternatives --remove javac $JAVA_HOME/bin/javac;
 else
-    echo -e "no old ${JAVA_HOME} found configuring new javac";
+    F__log "no old ${JAVA_HOME} found configuring new javac" "INF";
 fi
 
 if [ ${OLD_BROWSERPLUGIN} -gt 0 ]
 then
-    echo -e "\nfound old configuration for javaplugin pointing to ${JRE_HOME}"
+    F__log "\nfound old configuration for javaplugin pointing to ${JRE_HOME}" "INF";
     update-alternatives --remove javaplugin ${JRE_HOME}/lib/amd64/libnpjp2.so;
 else
-    echo -e "no old ${JRE_HOME} found configuring new javaplugin";
+    F__log "no old ${JRE_HOME} found configuring new javaplugin" "INF";
 fi
 
-echo -e "\nJAVAHOME used: ${JAVA_HOME}";
-echo -e "JREHOME used: ${JRE_HOME}\n";
+F__log "\nJAVAHOME used: ${JAVA_HOME}";
+F__log "JREHOME used: ${JRE_HOME}\n";
 
-echo -e "installing config JAVA w/ dirs java jre jre_exports and binaries keytool,policytool,orbd,rmiregistry,servetool,tnameserv\n";
+F__log "installing config JAVA w/ dirs java jre jre_exports and binaries keytool,policytool,orbd,rmiregistry,servetool,tnameserv\n" "INF";
 
 update-alternatives \
 --install /usr/bin/java java ${JAVA_HOME}/bin/java 1 \
@@ -83,7 +89,7 @@ update-alternatives \
 --slave /usr/bin/servertool servertool ${JAVA_HOME}/bin/servertool \
 --slave /usr/bin/tnameserv tnameserv ${JAVA_HOME}/bin/tnameserv \
 
-echo -e "installing config JRE w/ dirs java_sdk jvm-exports and binaries jar, jarsigner...a lot ;)\n";
+F__log "installing config JRE w/ dirs java_sdk jvm-exports and binaries jar, jarsigner...a lot ;)\n" "INF";
 
 update-alternatives \
 --install /usr/bin/javac javac ${JAVA_HOME}/bin/javac 1 \
@@ -114,14 +120,14 @@ update-alternatives \
 --slave /usr/bin/wsgen wsgen ${JAVA_HOME}/bin/wsgen \
 --slave /usr/bin/wsimport wsimport ${JAVA_HOME}/bin/wsimport \
 
-echo -e "installing config JAVAPLUGIN w/ binary javaws\n";
+F__log "installing config JAVAPLUGIN w/ binary javaws\n" "INF";
 
 update-alternatives \
 --install /usr/lib/browser-plugins/javaplugin.so javaplugin ${JRE_HOME}/lib/${PLUGINPATH}/libnpjp2.so 1 \
 --slave /usr/bin/javaws javaws ${JRE_HOME}/bin/javaws
 
 
-echo -e "activating new configs\n";
+F__log "activating new configs\n" "INF";
 
 update-alternatives --set java $JAVA_HOME/bin/java;
 
@@ -129,7 +135,7 @@ update-alternatives --set javac $JAVA_HOME/bin/javac;
 
 update-alternatives --set javaplugin ${JRE_HOME}/lib/amd64/libnpjp2.so
 
-echo -e "\ndisplaying installed versions of binaries\n"
+F__log "\ndisplaying installed versions of binaries\n" "INF";
 
 java -version;
 

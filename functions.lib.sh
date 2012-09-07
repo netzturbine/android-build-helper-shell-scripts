@@ -1,14 +1,15 @@
 #! /bin/bash
-#############################################################################
-# file: functions.lib.sh
-# author: arnd (at) netzturbine (dot) de
-# version 0.1b
-# DESCRIPTION: 
-# library which contains some shell functions/settings used in this script bundle
-# sourced by config.inc.sh by default
-# 
-# further Irmation see README.txt/README.md
-##############################################################################
+####################################################################################################
+# SRC: https://github.com/netzturbine/android-build-helper-shell-scripts.git                       #
+# AUTHOR: arnd (at) netzturbine (dot) de                                                           #
+# VERSION: 0.1b                                                                                    #
+# DESCRIPTION:                                                                                     #
+# library which contains some shell functions/settings used in this script bundle                  #
+# sourced by config.inc.sh by default                                                              #
+# all funtions starting w/ F__ are defined in this file                                            #
+#                                                                                                  #
+# for further Information see README.txt/README.md                                                 #
+####################################################################################################
 
 # define colours
 export BLACK="\033[0;30m"
@@ -30,11 +31,34 @@ export WHITE="\033[1;37m"
 export NC="\033[1;0m"              # No Color
 
 
-function getBasedir()
+function F__getBasedir()
 {
-	BASEDIR=$(dirname $0);
-	#echo ${BASEDIR};
-	export BASEDIR=${BASEDIR};
+	BASEDIR=$(cd $(dirname "$0"); pwd);
+	
+	case "${BASEDIR}" in 
+        [./]*)
+            local ABSPATH="$(cd ${1%/*}; pwd)/${1##*/}"
+            echo "${ABSPATH/\/\///}"
+        ;;
+        *)
+            echo "${PWD}/${BASEDIR}";
+        ;;
+    esac
+    
+    export BASEDIR=${BASEDIR};
+
+}
+
+function F__resetVars(){
+	PREFIX=${1};
+	F__log "unsetting ${PREFIX} vars" "INF";
+	PARAMS=`env | grep ${PREFIX}`;
+	for PARAM in ${PARAMS}
+	do
+	    UNSET=$(echo ${PARAM} | awk -F= '{print $1}' );
+	    unset ${UNSET}
+    	#F__log "unset ${UNSET}" "INF";
+	done
 }
 
 ###################################################################################################
@@ -43,7 +67,8 @@ function getBasedir()
 # throws a warning if no OS is configured in config.inc.sh and checks against "Linux" and "Darwin" 
 # throws an error and exits if no MANDATORY OS is found
 ###################################################################################################
-function checkOS()
+
+function F__checkOS()
 {
      CHECKPLATFORMS="${1}";
      if [[ ${CHECKPLATFORMS} == "osx" ]]
@@ -54,9 +79,9 @@ function checkOS()
      if [[ -z ${CHECKPLATFORMS}  ]]
      then
          CHECKPLATFORMS="Linux Darwin";
-         log "PLATFORM not set in conf using: ${CHECKPLATFORMS}" "WARN";
+         F__log "PLATFORM not set in conf using: ${CHECKPLATFORMS}" "WARN";
      else
-     	log "${CHECKPLATFORMS} PLATFORM set in conf" "INF";
+     	F__log "${CHECKPLATFORMS} PLATFORM set in conf" "INF";
      fi
      
 	 UNAMESTRING=`uname`;
@@ -73,10 +98,10 @@ function checkOS()
     done
     if [[ -z ${FOUND} ]]
     then
-        log "PLATFORM ${UNAMESTRING} not recognized ... bailing out" "ERR";        
+        F__log "PLATFORM ${UNAMESTRING} not recognized ... bailing out" "ERR";        
         echo -e "${RED}ERR:${NC} PLATFORM ${UNAMESTRING} not recognized ... bailing out"
     else
-         log "found supported ${OS} PLATFORM" "INF";
+         F__log "found supported ${OS} PLATFORM" "INF";
          export PLATFORM=${OS};     
     fi
             
@@ -84,13 +109,15 @@ function checkOS()
 	unset UNAMESTRING;
 	unset CHECKPLATFORMS;
 }
+
 ###################################################################################################
 # checks for neccessary root privileges
 # CALLED: checkRoot "true" or "false" 
 # throws a warning that root privileges would be better if called w/ "false"
 # throws an error and exits if root privileges are MANDATORY if called w/ "true" or no param
 ###################################################################################################
-function checkRoot()
+
+function F__checkRoot()
 {
    
    MUSTHAVE=${1};   
@@ -98,42 +125,47 @@ function checkRoot()
    then
       if [[ MUSTHAVE == "false" ]]
       then
-    	log "dear ${LOGNAME} you should be root to use this script ... continue" "WARN";
+    	F__log "dear ${F__logNAME} you should be root to use this script ... continue" "WARN";
       else
-      	log "dear ${LOGNAME} you MUST be root to use this script properly... bailing out" "ERR";
+      	F__log "dear ${F__logNAME} you MUST be root to use this script properly... bailing out" "ERR";
       	exit 1;
       fi
   else
-      log "script called w/ neccessary root privileges ... continueing" "INF";
+      F__log "script called w/ neccessary root privileges ... continueing" "INF";
    fi
 }
+
 ###################################################################################################
 # checks if not root
 # CALLED: checkNonRoot "true" or "false" 
 # throws a warning that non root privileges would be better if called w/ "false"
 # throws an error and exits if root privileges are PROHIBITED if called w/ "true" or no param
 ###################################################################################################
-function checkNonRoot()
+
+function F__checkNonRoot()
 {
    MUSTNOTHAVE=${1};
    if [[ ${LOGNAME} == "root" ]]
    then
       if [[ ${MUSTNOTHAVE} == "false" ]]
       then
-        log "dear ${LOGNAME} you should NOT be root to use this script ... bailing out" "WARN";
+        F__log "dear ${F__logNAME} you should NOT be root to use this script ... bailing out" "WARN";
       else
-      	log "dear ${LOGNAME} NEVER be root to use this script ... bailing out" "ERR";
+      	F__log "dear ${F__logNAME} NEVER be root to use this script ... bailing out" "ERR";
       exit 1;
       fi
   else
-      log "script called w/o root privileges continuing" "INF";
+      F__log "script called w/o root privileges continuing" "INF";
    fi
 }
+
+###################################################################################################
 # checks if a given dir is writeable for a ${FACILITY}
 # if not tries to create it if ${CREATE} flag is set to true
 # bails out if everything fails
+###################################################################################################
 
-function checkForDir() 
+function F__checkForDir() 
 {
     FACILITY=${1};
 	CHECKDIR=${2};
@@ -143,9 +175,9 @@ function checkForDir()
 	then 
 	    if [ -w ${CHECKDIR} ]
     	then
-    	    log "found writable ${CHECKDIR} to enable ${FACILITY}" "INF";
+    	    F__log "found writable ${CHECKDIR} to enable ${FACILITY}" "INF";
     	else
-	    	log "${CHECKDIR} needed by ${FACILITY} not writable by ${USER} ...bailing out" "ERR";
+	    	F__log "${CHECKDIR} needed by ${FACILITY} not writable by ${USER} ...bailing out" "ERR";
    			echo -e "${RED}ERR:${NC} ${CHECKDIR} needed by ${FACILITY} not writable by ${USER} ...bailing out";
    			exit 1;
         fi   
@@ -154,9 +186,9 @@ function checkForDir()
     then
         if mkdir -p ${CHECKDIR};
         then
-    		log "created ${CHECKDIR} needed by ${FACILITY}" "WARN";
+    		F__log "created ${CHECKDIR} needed by ${FACILITY}" "WARN";
     	else
-    	    log  "could not create dir: ${CHECKDIR} needed by ${FACILITY} ...bailing out" "ERR";
+    	    F__log  "could not create dir: ${CHECKDIR} needed by ${FACILITY} ...bailing out" "ERR";
     	    echo "${RED}ERR:${NC} could not create dir: ${CHECKDIR} needed by ${FACILITY} ...bailing out";
     		exit 1;
     	fi
@@ -166,11 +198,11 @@ function checkForDir()
 	unset CREATE;
 }
 
-# logs w/ timestamp a given message to a given LOGFACILITY
-# tests via function "checkForDir" the logdir
+# F__logs w/ timestamp a given message to a given F__logFACILITY
+# tests via function F__"checkForDir" the F__logdir
 #
 
-function log() 
+function F__log() 
 {
 	MSG="${1}";
 	LOGLEVEL="${2}";
