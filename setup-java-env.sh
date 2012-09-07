@@ -4,6 +4,11 @@
 # version 0.1b                                                                                     #
 # description: script sets up java alternatives links on linux systems                             #
 # it is part of a collection of helper scripts I used to quick setup an android build environment  #
+#                                                                                                  #
+# all variables starting w/ ABH_ are defined in config.inc.shell                                   #
+# all funtions starting w/ F__ are defined in functions.lib.sh                                     #
+#                                                                                                  #
+# for further Information see README.txt/README.md                                                 #
 ####################################################################################################
 
 #include config needed by script
