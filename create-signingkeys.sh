@@ -1,9 +1,15 @@
 #!/bin/bash
 ####################################################################################################
-# author: arnd (at) netzturbine (dot) de                                                           #
-# version 0.1b                                                                                     #
-# description: script creates keys to sign packages                                                #
+# SRC: https://github.com/netzturbine/android-build-helper-shell-scripts.git                       #
+# AUTHOR: arnd (at) netzturbine (dot) de                                                           #
+# VERSION: 0.1b                                                                                    #
+# DESCRIPTION: script creates keys to sign packages                                                #
 # it is part of a collection of helper scripts I used to quick setup an android build environment  #
+#                                                                                                  #
+# all variables starting w/ ABH_ are defined in config.inc.shell                                   #
+# all funtions starting w/ F__ are defined in functions.lib.sh                                     #
+#                                                                                                  #
+# for further Information see README.txt/README.md                                                 #
 ####################################################################################################
 
 #include config + functions needed by script
@@ -16,29 +22,56 @@ else
     exit 1;
 fi
 
-KEYDIRECTORY="${2}";
-KEYNAME="${1}-";
+F__getBasedir();
 
-if [[ ${KEYDIRECTORY} != "" ]]
+KEYSTORE="${3}";
+PASSWD="${2}";
+KEYNAME="${1}";
+
+if [[ ${KEYSTORE} != "" ]]
 then
-    checkForDir "writable KEYDIRECTORY" ${KEYDIRECTORY};
+    F__checkForDir "writable KEYSTORE" ${KEYSTORE};
 else
-    checkForDir "writable ABH_DEFAULT_KEYSTORE" ${ABH_DEFAULT_KEYSTORE};
-    ${KEYDIRECTORY} = ${ABH_DEFAULT_KEYSTORE};
+    F__checkForDir "writable ABH_DEFAULT_KEYSTORE" ${ABH_DEFAULT_KEYSTORE};
+    ${KEYSTORE} = ${ABH_DEFAULT_KEYSTORE};
 fi
 
-cd ${KEYDIRECTORY};
-
-
-if [ ${1} -le 0 ]
+if [[ ${PASSWD} == "" ]]
 then
-    log "you must define a KEYNAME as 1st parameter - EXIT" "WARN";
-    exit 1;
+    if [[ ${ABH_KEY_DEFAULT_PWD} != "" ]]
+    then
+    	PASSWD="${ABH_KEY_DEFAULT_PWD}";
+    else
+    	F__log "you must define a PASSWD as 2nd parameter or define ABH_KEY_DEFAULT_PWD in  - EXIT" "WARN";
+    	exit 1;
+    fi
 fi
 
+if [[ ${KEYNAME} == "" ]]
+then
+    if [[ ${ABH_KEY_DEFAULT} != "" ]]
+    then
+    	KEYNAME="${ABH_KEY_DEFAULT}";
+    else
+    	F__log "you must define a KEYNAME as 1st parameter or define ABH_KEY_DEFAULT in  - EXIT" "WARN";
+    	exit 1;
+    fi
+fi
 
+#finally generate keys
+function genSimpleKeys(){
+	openssl genrsa -out ${KEYSTORE}/${KEYNAME}.key.pem 1024
+	openssl req -new -key ${KEYSTORE}/${KEYNAME}.key.pem -out request.pem
+	openssl x509 -req -days 9999 -in ${KEYSTORE}/${KEYNAME}.request.pem -signkey ${KEYSTORE}/${KEYNAME}.key.pem -out ${KEYSTORE}/${KEYNAME}.certificate.pem
+	openssl pkcs8 -topk8 -outform DER -in ${KEYSTORE}/${KEYNAME}.key.pem -inform PEM -out ${KEYSTORE}/${KEYNAME}.key.pk8 -nocrypt;
+	F__log "created keys in ${KEYSTORE}" "INF";
+}
 
-openssl genrsa -out ${KEYNAME}key.pem 1024
-openssl req -new -key ${KEYNAME}key.pem -out request.pem
-openssl x509 -req -days 9999 -in ${KEYNAME}request.pem -signkey ${KEYNAME}key.pem -out ${KEYNAME}certificate.pem
-openssl pkcs8 -topk8 -outform DER -in ${KEYNAME}key.pem -inform PEM -out ${KEYNAME}key.pk8 -nocrypt
+function genKeystore(){
+
+keytool -genkeypair -keystore ${KEYSTORE}/${KEYNAME}.keystore -storepass ${PASSWD} -keyalg RSA \
+  -validity $((25 * 365)) -alias ${KEYNAME} -keysize 2048 \
+  -dname "CN=${ABH_KEYS_CN}, O=${ABH_KEYS_O}, L=${ABH_KEYS_L}, ST=${ABH_KEYS_ST}, C=${ABH_KEYS_C}"; 
+  
+   F__log "created keystore ${KEYSTORE}/${KEYNAME}.keystore" "INF";
+  }
