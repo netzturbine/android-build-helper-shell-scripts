@@ -84,7 +84,6 @@ function checkOS()
 	unset UNAMESTRING;
 	unset CHECKPLATFORMS;
 }
-
 ###################################################################################################
 # checks for neccessary root privileges
 # CALLED: checkRoot "true" or "false" 
