@@ -51,9 +51,6 @@ export LOGFILE=${ABH_LOG_FILE};
 ABH_DEFAULT_BUILD_DIR="system";
 export ABH_DEFAULT_BUILD_DIR=${ABH_DEFAULT_BUILD_DIR};
 
-#define default directory to store sign keys (defaults to dir signingkeys)
-ABH_DEFAULT_KEYSTORE="./signingkeys";
-
 # define additional builddirs
 # here you can define additional builddirs to b included
 ABH_ADDITIONAL_BUILD_DIRS="system_X system_Y";
